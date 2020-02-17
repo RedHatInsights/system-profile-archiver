@@ -11,7 +11,6 @@ GROUP_ID = os.getenv("GROUP_ID", APP_NAME)
 HISTORICAL_SYS_PROFILE_URL = os.getenv(
     "HISTORICAL_SYS_PROFILE_URL", "historical_sys_profile_url_not_set"
 )
-INVENTORY_URL = os.getenv("INVENTORY_URL", "inventory_url_not_set")
 LOG_GROUP = os.getenv("LOG_GROUP", "platform-dev")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
