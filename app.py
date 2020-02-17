@@ -4,9 +4,7 @@ import requests
 
 from kafka import KafkaConsumer
 
-from kerlescan.inventory_service_interface import fetch_systems_with_profiles
-
-from system_profile_archiver import logging, metrics, config
+from system_profile_archiver import logging, config
 
 logger = logging.initialize_logging()
 
@@ -16,30 +14,19 @@ def main():
 
     consumer = init_consumer()
 
-    counters = {
-        "inventory_service_requests": metrics.inventory_service_requests,
-        "inventory_service_exceptions": metrics.inventory_service_exceptions,
-        "systems_compared_no_sysprofile": metrics.inventory_service_no_profile,
-    }
-
     while True:
         for data in consumer:
             logger.info("consuming message")
             try:
                 inventory_uuid = data.value["host"]["id"]
                 identity = data.value["platform_metadata"]["b64_identity"]
+                system_profile = data.value["host"]["system_profile"]
 
-                # fetch system from inventory
-                # TODO: handle case w/ missing system
-                systems = fetch_systems_with_profiles(
-                    [inventory_uuid], identity, logger, counters
-                )
-                system = systems[0]["system_profile"]
-                system["system_profile_exists"] = True
-                system["display_name"] = systems[0]["display_name"]
+                system_profile["system_profile_exists"] = True
+                system_profile["display_name"] = data.value["host"]["display_name"]
 
                 # create historical system profile
-                profile = {"inventory_id": inventory_uuid, "profile": system}
+                profile = {"inventory_id": inventory_uuid, "profile": system_profile}
                 headers = {
                     "x-rh-identity": identity,
                     "content-type": "application/json",
