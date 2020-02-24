@@ -4,7 +4,7 @@ import requests
 
 from kafka import KafkaConsumer
 
-from system_profile_archiver import logging, config
+from system_profile_archiver import logging, config, delete
 
 logger = logging.initialize_logging()
 
@@ -18,29 +18,36 @@ def main():
         for data in consumer:
             logger.info("consuming message")
             try:
-                inventory_uuid = data.value["host"]["id"]
-                identity = data.value["platform_metadata"]["b64_identity"]
-                system_profile = data.value["host"]["system_profile"]
-
-                system_profile["system_profile_exists"] = True
-                system_profile["display_name"] = data.value["host"]["display_name"]
-
-                # create historical system profile
-                profile = {"inventory_id": inventory_uuid, "profile": system_profile}
-                headers = {
-                    "x-rh-identity": identity,
-                    "content-type": "application/json",
-                }
-
-                result = requests.post(
-                    config.HISTORICAL_SYS_PROFILE_URL,
-                    data=json.dumps(profile),
-                    headers=headers,
-                )
-                logger.info("result of POST: %s" % result.status_code)
+                if config.CONSUME_TOPIC == "platform.inventory.host-egress":
+                    create_historical_profile(data.value)
+                elif config.CONSUME_TOPIC == "platform.inventory.events":
+                    if data.value["type"] == "delete":
+                        delete.delete_by_inventory_id(logger, data.value["id"])
 
             except Exception:
                 logger.exception("An error occurred during message processing")
+
+
+def create_historical_profile(message):
+    # TODO: break this out into its own file, and pass in logger
+    inventory_uuid = message["host"]["id"]
+    identity = message["platform_metadata"]["b64_identity"]
+    system_profile = message["host"]["system_profile"]
+
+    system_profile["system_profile_exists"] = True
+    system_profile["display_name"] = message["host"]["display_name"]
+
+    # create historical system profile
+    profile = {"inventory_id": inventory_uuid, "profile": system_profile}
+    headers = {
+        "x-rh-identity": identity,
+        "content-type": "application/json",
+    }
+
+    result = requests.post(
+        config.HISTORICAL_SYS_PROFILE_URL, data=json.dumps(profile), headers=headers,
+    )
+    logger.info("result of POST: %s" % result.status_code)
 
 
 def init_consumer():

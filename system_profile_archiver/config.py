@@ -14,6 +14,12 @@ HISTORICAL_SYS_PROFILE_URL = os.getenv(
 LOG_GROUP = os.getenv("LOG_GROUP", "platform-dev")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
+DB_USER = os.getenv("HSP_DB_USER", "insights")
+DB_PORT = os.getenv("HSP_DB_PORT", "5432")
+DB_PASSWORD = os.getenv("HSP_DB_PASS", "insights")
+DB_HOST = os.getenv("HSP_DB_HOST", "localhost")
+DB_NAME = os.getenv("HSP_DB_NAME", "insights")
+
 logger = logging.getLogger(APP_NAME)
 
 
