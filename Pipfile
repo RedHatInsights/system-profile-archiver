@@ -20,3 +20,4 @@ requests = "*" # remove this
 prometheus-client = "*"
 watchtower = "*"
 logstash-formatter = "*"
+psycopg2 = "*"
