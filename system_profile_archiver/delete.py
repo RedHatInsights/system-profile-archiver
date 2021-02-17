@@ -19,6 +19,7 @@ def delete_by_inventory_id(logger, inventory_id):
     cur = conn.cursor()
     logger.info("deleting records for host %s" % inventory_id)
     cur.execute(DELETE_SQL, (inventory_id,))
+    # TODO: (audit-log) delete
     conn.commit()
     cur.close()
     conn.close()

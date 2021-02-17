@@ -19,9 +19,11 @@ def main():
             logger.info("consuming message")
             try:
                 if config.CONSUME_TOPIC == "platform.inventory.host-egress":
+                    # TODO: (audit-log) create system-profile-archiver/app.py#create_historical_profile
                     create_historical_profile(data.value)
                 elif config.CONSUME_TOPIC == "platform.inventory.events":
                     if data.value["type"] == "delete":
+                        # TODO: (audit-log) delete system_profile_archiver/delete.py#delete_by_inventory_id
                         delete.delete_by_inventory_id(logger, data.value["id"])
 
             except Exception:
@@ -44,6 +46,7 @@ def create_historical_profile(message):
         "content-type": "application/json",
     }
 
+    # TODO: (audit-log) create external
     result = requests.post(
         config.HISTORICAL_SYS_PROFILE_URL, data=json.dumps(profile), headers=headers,
     )
